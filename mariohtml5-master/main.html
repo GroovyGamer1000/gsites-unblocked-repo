@@ -1,25 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8" />
     <title>Infinite Mario - JavaScript</title>
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         html, body {
             margin: 0;
             padding: 0;
-            height: 100%;
             overflow: hidden;
+            width: 100%;
+            height: 100%;
         }
 
         canvas {
-            display: block;
             position: absolute;
             top: 0;
             left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: block;
         }
     </style>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
 </head>
 <body>
     <canvas id="canvas"></canvas>
@@ -41,7 +44,7 @@
     <script src="Enjine/collideable.js"></script>
     <script src="Enjine/application.js"></script>
 
-    <!-- Game Code -->
+    <!-- Actual game code -->
     <script src="code/setup.js"></script>
     <script src="code/spriteCuts.js"></script>
     <script src="code/level.js"></script>
@@ -70,22 +73,12 @@
     <script src="code/winState.js"></script>
     <script src="code/mapState.js"></script>
     <script src="code/levelState.js"></script>
+
     <script src="code/music.js"></script>
 
-    <!-- Resize & Initialize Game -->
     <script>
-        const canvas = document.getElementById('canvas');
-
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
         $(document).ready(function () {
-            new Enjine.Application().Initialize(new Mario.LoadingState(), canvas.width, canvas.height);
+            new Enjine.Application().Initialize(new Mario.LoadingState(), 320, 240);
         });
     </script>
 </body>
