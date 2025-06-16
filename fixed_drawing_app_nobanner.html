@@ -1,0 +1,179 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Drawing App</title>
+  <style>
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #f4dcd7;
+      font-family: "Comic Sans MS", cursive, sans-serif;
+    }
+    #toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 10px;
+      background-color: #ffffff;
+      justify-content: center;
+      border-bottom: 1px solid #ccc;
+    }
+    canvas {
+      flex: 1;
+      display: block;
+      background-color: white;
+      cursor: crosshair;
+    }
+    button, input[type="color"], input[type="checkbox"] {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  
+  <div id="toolbar">
+    <button onclick="setTool('pencil')">✏️ Pencil</button>
+    <button onclick="setTool('line')">📏 Line</button>
+    <button onclick="setTool('rect')">⬛ Rect</button>
+    <button onclick="setTool('ellipse')">⚪ Ellipse</button>
+    <button onclick="setTool('fill')">🪣 Fill</button>
+    <button onclick="setTool('text')">🔤 Text</button>
+    <button onclick="setTool('eraser')">🧽 Eraser</button>
+    <button onclick="setTool('picker')">🖌️ Picker</button>
+    <label><input type="checkbox" id="fillToggle" /> Fill</label>
+    <input type="color" id="colorPicker" value="#000000" />
+    <button onclick="undo()">↩️ Undo</button>
+    <button onclick="redo()">↪️ Redo</button>
+    <button onclick="save()">💾 Save</button>
+  </div>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let tool = 'pencil';
+    let drawing = false;
+    let startX, startY;
+    let history = [];
+    let redoStack = [];
+
+    function resizeCanvas() {
+      const toolbar = document.getElementById('toolbar');
+      const toolbarHeight = toolbar.offsetHeight;
+      const availableHeight = document.documentElement.clientHeight - toolbarHeight;
+      const availableWidth = document.documentElement.clientWidth;
+
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      tempCanvas.getContext('2d').drawImage(canvas, 0, 0);
+
+      canvas.width = availableWidth;
+      canvas.height = availableHeight;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(tempCanvas, 0, 0);
+    }
+
+    function setTool(selectedTool) {
+      tool = selectedTool;
+    }
+
+    function saveState() {
+      history.push(canvas.toDataURL());
+      if (history.length > 50) history.shift(); // Limit to 50
+      redoStack = [];
+    }
+
+    function undo() {
+      if (history.length > 0) {
+        redoStack.push(canvas.toDataURL());
+        const prev = history.pop();
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = prev;
+      }
+    }
+
+    function redo() {
+      if (redoStack.length > 0) {
+        saveState();
+        const next = redoStack.pop();
+        const img = new Image();
+        img.onload = () => ctx.drawImage(img, 0, 0);
+        img.src = next;
+      }
+    }
+
+    function save() {
+      const link = document.createElement('a');
+      link.download = 'drawing.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    canvas.addEventListener('mousedown', e => {
+      startX = e.offsetX;
+      startY = e.offsetY;
+      drawing = true;
+      if (tool === 'pencil' || tool === 'eraser') {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+      }
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (!drawing) return;
+      const x = e.offsetX;
+      const y = e.offsetY;
+      if (tool === 'pencil') {
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = document.getElementById('colorPicker').value;
+        ctx.stroke();
+      } else if (tool === 'eraser') {
+        ctx.clearRect(x - 5, y - 5, 10, 10);
+      }
+    });
+
+    canvas.addEventListener('mouseup', e => {
+      drawing = false;
+      const x = e.offsetX;
+      const y = e.offsetY;
+      const fill = document.getElementById('fillToggle').checked;
+      ctx.strokeStyle = document.getElementById('colorPicker').value;
+      ctx.fillStyle = ctx.strokeStyle;
+      if (tool === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      } else if (tool === 'rect') {
+        const width = x - startX;
+        const height = y - startY;
+        if (fill) ctx.fillRect(startX, startY, width, height);
+        else ctx.strokeRect(startX, startY, width, height);
+      } else if (tool === 'ellipse') {
+        ctx.beginPath();
+        ctx.ellipse((startX + x) / 2, (startY + y) / 2, Math.abs(x - startX) / 2, Math.abs(y - startY) / 2, 0, 0, Math.PI * 2);
+        fill ? ctx.fill() : ctx.stroke();
+      }
+      saveState();
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('DOMContentLoaded', () => {
+      resizeCanvas();
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveState();
+    });
+  </script>
+</body>
+</html>
