@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Baldi's Basics</title>
+  <meta charset="UTF-8">
+  <title>Baldi's Basics Fullscreen</title>
   <link rel="stylesheet" href="TemplateData/style.css">
   <script src="TemplateData/UnityProgress.js"></script>
   <script src="baldi.js"></script>
@@ -15,9 +15,10 @@
       overflow: hidden;
     }
     #gameContainer {
-      width: 100vw;
-      height: 100vh;
-      position: relative;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
     }
     canvas {
       width: 100% !important;
@@ -27,35 +28,30 @@
   </style>
 </head>
 <body>
-  <div class="webgl-content">
-    <div id="gameContainer"></div>
-  </div>
+  <div id="gameContainer"></div>
 
   <script>
     var gameInstance = UnityLoader.instantiate("gameContainer", "baldi.json", {
       onProgress: UnityProgress,
       Module: {
+        preRun: [function() {
+          window.addEventListener('resize', function() {
+            var canvas = document.querySelector("#gameContainer canvas");
+            if (canvas) {
+              canvas.style.width = "100%";
+              canvas.style.height = "100%";
+            }
+          });
+        }],
         onRuntimeInitialized: function () {
-          UnityProgress(gameInstance, "complete");
-
-          // Force canvas resize on load
-          resizeCanvas();
-
-          // Resize canvas when window resizes
-          window.addEventListener('resize', resizeCanvas);
+          var canvas = document.querySelector("#gameContainer canvas");
+          if (canvas) {
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+          }
         }
       }
     });
-
-    function resizeCanvas() {
-      var canvas = document.querySelector("#gameContainer canvas");
-      if (canvas) {
-        canvas.style.width = "100%";
-        canvas.style.height = "100%";
-      }
-    }
   </script>
-
-  <script src="firebase-app.js"></script>
 </body>
 </html>
